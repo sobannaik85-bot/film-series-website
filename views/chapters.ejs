@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapters | FILM Series</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+
+  <section class="section page-section">
+    <h1 class="page-title">All Chapters</h1>
+
+    <% if (chapters.length === 0) { %>
+      <p class="empty-state">No chapters available yet. Check back soon!</p>
+    <% } else { %>
+      <div class="chapter-list">
+        <% chapters.forEach(ch => { %>
+          <div class="chapter-list-item">
+            <div class="chapter-list-left">
+              <% if (ch.cover_image) { %>
+                <img src="<%= ch.cover_image %>" alt="Chapter <%= ch.chapter_number %>" class="chapter-thumb">
+              <% } else { %>
+                <div class="chapter-thumb-placeholder">Ch.<%= ch.chapter_number %></div>
+              <% } %>
+              <div>
+                <span class="chapter-badge">Chapter <%= ch.chapter_number %></span>
+                <h3><%= ch.title %></h3>
+              </div>
+            </div>
+            <a href="/chapters/<%= ch.id %>" class="btn btn-sm">Read</a>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </section>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

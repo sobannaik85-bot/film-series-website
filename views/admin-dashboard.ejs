@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | FILM Series</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+
+  <section class="section page-section">
+    <div class="dashboard-header">
+      <h1 class="page-title">Admin Dashboard</h1>
+      <a href="/admin/chapters/add" class="btn">+ Add Chapter</a>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-num"><%= chapters.length %></div>
+        <div class="stat-label">Chapters</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num"><%= userCount %></div>
+        <div class="stat-label">Readers</div>
+      </div>
+    </div>
+
+    <h2 class="section-subtitle">Manage Chapters</h2>
+
+    <% if (chapters.length === 0) { %>
+      <div class="empty-state">
+        <p>No chapters yet. <a href="/admin/chapters/add">Add your first chapter!</a></p>
+      </div>
+    <% } else { %>
+      <div class="admin-table-wrapper">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Title</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% chapters.forEach(ch => { %>
+              <tr>
+                <td><strong>Ch. <%= ch.chapter_number %></strong></td>
+                <td><%= ch.title %></td>
+                <td><%= new Date(ch.created_at).toLocaleDateString() %></td>
+                <td>
+                  <a href="/chapters/<%= ch.id %>" class="btn btn-sm btn-outline">View</a>
+                  <a href="/admin/chapters/edit/<%= ch.id %>" class="btn btn-sm btn-edit">Edit</a>
+                  <form method="POST" action="/admin/chapters/delete/<%= ch.id %>" style="display:inline" onsubmit="return confirm('Delete this chapter?')">
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+
+    <!-- Announcements Section -->
+    <h2 class="section-subtitle" style="margin-top: 50px;">Announcements</h2>
+
+    <div class="form-card" style="margin-bottom: 24px;">
+      <h3 style="margin-bottom: 16px;">Post New Announcement</h3>
+      <form method="POST" action="/admin/announcements/add">
+        <div class="form-group">
+          <label for="ann-title">Title</label>
+          <input type="text" id="ann-title" name="title" required placeholder="e.g. New Chapter Coming Soon!">
+        </div>
+        <div class="form-group">
+          <label for="ann-content">Content</label>
+          <textarea id="ann-content" name="content" rows="3" required placeholder="Write your announcement here..."></textarea>
+        </div>
+        <button type="submit" class="btn">Post Announcement</button>
+      </form>
+    </div>
+
+    <% if (announcements && announcements.length > 0) { %>
+      <div class="announcement-list">
+        <% announcements.forEach(ann => { %>
+          <div class="announcement-card">
+            <div class="announcement-header">
+              <h3><%= ann.title %></h3>
+              <span class="announcement-date"><%= new Date(ann.created_at).toLocaleDateString() %></span>
+              <form method="POST" action="/admin/announcements/delete/<%= ann.id %>" style="display:inline; margin-left:auto;">
+                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this announcement?')">Delete</button>
+              </form>
+            </div>
+            <p><%= ann.content %></p>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <p class="empty-state" style="padding: 20px;">No announcements posted yet.</p>
+    <% } %>
+
+  </section>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

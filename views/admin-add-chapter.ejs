@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Chapter | FILM Series</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+
+  <section class="section page-section">
+    <div class="dashboard-header">
+      <h1 class="page-title">Add New Chapter</h1>
+      <a href="/admin/dashboard" class="btn btn-outline">Back to Dashboard</a>
+    </div>
+
+    <% if (error) { %>
+      <div class="alert alert-error"><%= error %></div>
+    <% } %>
+
+    <form method="POST" action="/admin/chapters/add" enctype="multipart/form-data" class="form-card" id="chapterForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="chapter_number">Chapter Number</label>
+          <input type="number" id="chapter_number" name="chapter_number" required min="0" placeholder="e.g. 0, 1, 2...">
+        </div>
+        <div class="form-group flex-grow">
+          <label for="title">Chapter Title</label>
+          <input type="text" id="title" name="title" required placeholder="e.g. The Beginning">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="cover">Cover Image (optional)</label>
+        <input type="file" id="cover" name="cover" accept="image/*">
+      </div>
+
+      <div class="form-group">
+        <label>Chapter Pages</label>
+        <div class="pages-upload-zone" id="dropZone">
+          <input type="file" id="pagesInput" name="pages" accept="image/*" multiple hidden>
+          <div class="drop-zone-content">
+            <span class="drop-icon">&#128444;</span>
+            <p>Drag & drop page images here</p>
+            <p class="form-hint">or click to browse files</p>
+            <button type="button" class="btn btn-sm btn-outline" id="browseBtn" style="margin-top:10px;">Browse Files</button>
+          </div>
+        </div>
+        <small class="form-hint">Supported: JPG, PNG, GIF, WebP (max 10MB each). Pages are ordered by upload/file name order.</small>
+      </div>
+
+      <div id="pagePreviewContainer" class="page-preview-grid" style="display:none;">
+        <h4 class="preview-heading">Pages Preview <span id="pageCount"></span></h4>
+        <div id="pagePreviewList" class="page-preview-list"></div>
+        <button type="button" class="btn btn-sm btn-outline" id="addMoreBtn" style="margin-top:12px;">+ Add More Pages</button>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-lg">Publish Chapter</button>
+      </div>
+    </form>
+
+    <script>
+    (function() {
+      const dropZone = document.getElementById('dropZone');
+      const pagesInput = document.getElementById('pagesInput');
+      const browseBtn = document.getElementById('browseBtn');
+      const addMoreBtn = document.getElementById('addMoreBtn');
+      const previewContainer = document.getElementById('pagePreviewContainer');
+      const previewList = document.getElementById('pagePreviewList');
+      const pageCount = document.getElementById('pageCount');
+      const form = document.getElementById('chapterForm');
+
+      let allFiles = [];
+
+      browseBtn.addEventListener('click', () => pagesInput.click());
+      addMoreBtn.addEventListener('click', () => pagesInput.click());
+      dropZone.addEventListener('click', (e) => {
+        if (e.target === dropZone || e.target.closest('.drop-zone-content')) pagesInput.click();
+      });
+
+      dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+      dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+        addFiles(files);
+      });
+
+      pagesInput.addEventListener('change', () => {
+        addFiles(Array.from(pagesInput.files));
+        pagesInput.value = '';
+      });
+
+      function addFiles(files) {
+        files.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+        allFiles = allFiles.concat(files);
+        renderPreviews();
+      }
+
+      function renderPreviews() {
+        previewList.innerHTML = '';
+        if (allFiles.length === 0) {
+          previewContainer.style.display = 'none';
+          dropZone.style.display = '';
+          return;
+        }
+        previewContainer.style.display = '';
+        dropZone.style.display = 'none';
+        pageCount.textContent = '(' + allFiles.length + ' page' + (allFiles.length !== 1 ? 's' : '') + ')';
+
+        allFiles.forEach((file, idx) => {
+          const item = document.createElement('div');
+          item.className = 'page-preview-item';
+          item.draggable = true;
+          item.dataset.index = idx;
+
+          const num = document.createElement('span');
+          num.className = 'page-num';
+          num.textContent = idx + 1;
+
+          const thumb = document.createElement('img');
+          thumb.className = 'page-thumb';
+          const url = URL.createObjectURL(file);
+          thumb.src = url;
+          thumb.onload = () => URL.revokeObjectURL(url);
+
+          const name = document.createElement('span');
+          name.className = 'page-name';
+          name.textContent = file.name;
+
+          const actions = document.createElement('span');
+          actions.className = 'page-actions';
+
+          if (idx > 0) {
+            const up = document.createElement('button');
+            up.type = 'button'; up.className = 'btn btn-sm btn-outline page-move-btn'; up.innerHTML = '&uarr;';
+            up.onclick = () => { [allFiles[idx - 1], allFiles[idx]] = [allFiles[idx], allFiles[idx - 1]]; renderPreviews(); };
+            actions.appendChild(up);
+          }
+          if (idx < allFiles.length - 1) {
+            const down = document.createElement('button');
+            down.type = 'button'; down.className = 'btn btn-sm btn-outline page-move-btn'; down.innerHTML = '&darr;';
+            down.onclick = () => { [allFiles[idx], allFiles[idx + 1]] = [allFiles[idx + 1], allFiles[idx]]; renderPreviews(); };
+            actions.appendChild(down);
+          }
+
+          const del = document.createElement('button');
+          del.type = 'button'; del.className = 'btn btn-sm btn-danger page-move-btn'; del.innerHTML = '&times;';
+          del.onclick = () => { allFiles.splice(idx, 1); renderPreviews(); };
+          actions.appendChild(del);
+
+          item.append(num, thumb, name, actions);
+          previewList.appendChild(item);
+        });
+      }
+
+      // Before form submits, populate a real file input with the ordered files
+      form.addEventListener('submit', (e) => {
+        if (allFiles.length === 0) return;
+        e.preventDefault();
+        const dt = new DataTransfer();
+        allFiles.forEach(f => dt.items.add(f));
+        pagesInput.files = dt.files;
+        form.removeEventListener('submit', arguments.callee);
+        form.submit();
+      });
+    })();
+    </script>
+  </section>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

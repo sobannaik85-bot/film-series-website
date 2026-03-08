@@ -1,0 +1,20 @@
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="/" class="logo">FILM</a>
+    <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">&#9776;</button>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/chapters">Chapters</a>
+      <% if (user) { %>
+        <span class="nav-user">Hey, <strong><%= user.username %></strong></span>
+        <% if (user.role === 'admin') { %>
+          <a href="/admin/dashboard" class="btn btn-sm btn-accent">Dashboard</a>
+        <% } %>
+        <a href="/logout" class="btn btn-outline btn-sm">Logout</a>
+      <% } else { %>
+        <a href="/login" class="btn btn-sm">Login</a>
+        <a href="/register" class="btn btn-outline btn-sm">Sign Up</a>
+      <% } %>
+    </div>
+  </div>
+</nav>

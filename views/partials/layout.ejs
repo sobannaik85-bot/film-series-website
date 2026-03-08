@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title + ' | ' : '' %>FILM Series</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/" class="logo">FILM</a>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/chapters">Chapters</a>
+        <% if (user) { %>
+          <span class="nav-user">Hey, <%= user.username %></span>
+          <% if (user.role === 'admin') { %>
+            <a href="/admin/dashboard" class="btn btn-sm">Dashboard</a>
+          <% } %>
+          <a href="/logout" class="btn btn-outline btn-sm">Logout</a>
+        <% } else { %>
+          <a href="/login" class="btn btn-sm">Login</a>
+          <a href="/register" class="btn btn-outline btn-sm">Register</a>
+        <% } %>
+      </div>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <%- body %>
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2026 FILM Series. All rights reserved.</p>
+  </footer>
+</body>
+</html>

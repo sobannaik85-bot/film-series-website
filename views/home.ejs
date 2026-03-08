@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FILM Series</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+
+  <section class="hero">
+    <div class="hero-content">
+      <h1 class="hero-title">FILM</h1>
+      <p class="hero-subtitle">The Official Series</p>
+      <p class="hero-desc">Read the latest chapters for free. Join our community of readers.</p>
+      <% if (user) { %>
+        <a href="/chapters" class="btn btn-lg">Read Now</a>
+      <% } else { %>
+        <a href="/register" class="btn btn-lg">Get Started Free</a>
+      <% } %>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Available Chapters</h2>
+    <% if (chapters.length === 0) { %>
+      <p class="empty-state">No chapters available yet. Stay tuned!</p>
+    <% } else { %>
+      <div class="chapter-grid">
+        <% chapters.forEach(ch => { %>
+          <div class="chapter-card">
+            <div class="chapter-cover">
+              <% if (ch.cover_image) { %>
+                <img src="<%= ch.cover_image %>" alt="Chapter <%= ch.chapter_number %>">
+              <% } else { %>
+                <div class="cover-placeholder">Ch. <%= ch.chapter_number %></div>
+              <% } %>
+            </div>
+            <div class="chapter-info">
+              <span class="chapter-num">Chapter <%= ch.chapter_number %></span>
+              <h3><%= ch.title %></h3>
+              <a href="/chapters/<%= ch.id %>" class="btn btn-sm">Read</a>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </section>
+
+  <% if (announcements && announcements.length > 0) { %>
+  <section class="section">
+    <h2 class="section-title">Announcements</h2>
+    <div class="announcement-list">
+      <% announcements.slice(0, 5).forEach(ann => { %>
+        <div class="announcement-card">
+          <div class="announcement-header">
+            <span class="announcement-badge">NEW</span>
+            <h3><%= ann.title %></h3>
+            <span class="announcement-date"><%= new Date(ann.created_at).toLocaleDateString() %></span>
+          </div>
+          <p><%= ann.content %></p>
+        </div>
+      <% }) %>
+    </div>
+  </section>
+  <% } %>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

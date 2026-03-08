@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login | FILM Series</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+
+  <div class="auth-container">
+    <div class="auth-card admin-card">
+      <div class="admin-badge">ADMIN</div>
+      <h1>Admin Login</h1>
+      <p class="auth-sub">Access the admin dashboard</p>
+
+      <% if (error) { %>
+        <div class="alert alert-error"><%= error %></div>
+      <% } %>
+
+      <form method="POST" action="/admin/login">
+        <div class="form-group">
+          <label for="username">Admin Username</label>
+          <input type="text" id="username" name="username" required placeholder="Enter admin username">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required placeholder="Enter admin password">
+        </div>
+        <button type="submit" class="btn btn-full btn-accent">Login as Admin</button>
+      </form>
+
+      <p class="auth-footer"><a href="/login">Back to user login</a></p>
+    </div>
+  </div>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

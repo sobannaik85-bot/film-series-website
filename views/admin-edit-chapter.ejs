@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Chapter | FILM Series</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+
+  <section class="section page-section">
+    <div class="dashboard-header">
+      <h1 class="page-title">Edit Chapter <%= chapter.chapter_number %>: <%= chapter.title %></h1>
+      <a href="/admin/dashboard" class="btn btn-outline">Back to Dashboard</a>
+    </div>
+
+    <% if (error) { %>
+      <div class="alert alert-error"><%= error %></div>
+    <% } %>
+
+    <form method="POST" action="/admin/chapters/edit/<%= chapter.id %>" enctype="multipart/form-data" class="form-card" id="editForm">
+      <div class="form-group">
+        <label>Chapter Number</label>
+        <input type="text" value="<%= chapter.chapter_number %>" disabled class="form-disabled">
+        <small class="form-hint">Chapter number cannot be changed.</small>
+      </div>
+
+      <div class="form-group">
+        <label for="title">Chapter Title</label>
+        <input type="text" id="title" name="title" value="<%= chapter.title %>" required>
+      </div>
+
+      <div class="form-group">
+        <label for="cover">Replace Cover Image</label>
+        <% if (chapter.cover_image) { %>
+          <div class="current-image">
+            <img src="<%= chapter.cover_image %>" alt="Current cover" style="max-width:200px; border-radius:8px; margin-bottom:10px;">
+            <p class="form-hint">Current cover shown above. Upload a new one to replace it.</p>
+          </div>
+        <% } %>
+        <input type="file" id="cover" name="cover" accept="image/*">
+      </div>
+
+      <% if (pages.length > 0) { %>
+        <div class="form-group">
+          <label>Current Pages (<%= pages.length %>)</label>
+          <div class="existing-pages-grid">
+            <% pages.forEach(page => { %>
+              <div class="existing-page-item">
+                <span class="page-num"><%= page.page_number %></span>
+                <img src="<%= page.image_path %>" alt="Page <%= page.page_number %>" class="page-thumb">
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      <% } %>
+
+      <div class="form-group">
+        <label>Upload New Pages <span class="form-hint" style="display:inline;">(replaces all existing pages)</span></label>
+        <div class="pages-upload-zone" id="dropZone">
+          <input type="file" id="pagesInput" name="pages" accept="image/*" multiple hidden>
+          <div class="drop-zone-content">
+            <span class="drop-icon">&#128444;</span>
+            <p>Drag & drop page images here</p>
+            <p class="form-hint">or click to browse files</p>
+            <button type="button" class="btn btn-sm btn-outline" id="browseBtn" style="margin-top:10px;">Browse Files</button>
+          </div>
+        </div>
+        <small class="form-hint">Leave empty to keep current pages. Uploading new images will <strong>replace ALL</strong> existing pages.</small>
+      </div>
+
+      <div id="pagePreviewContainer" class="page-preview-grid" style="display:none;">
+        <h4 class="preview-heading">New Pages Preview <span id="pageCount"></span></h4>
+        <div id="pagePreviewList" class="page-preview-list"></div>
+        <button type="button" class="btn btn-sm btn-outline" id="addMoreBtn" style="margin-top:12px;">+ Add More Pages</button>
+      </div>
+
+      <div class="form-actions">
+        <a href="/admin/dashboard" class="btn btn-outline" style="margin-right:10px;">Cancel</a>
+        <button type="submit" class="btn btn-lg">Save Changes</button>
+      </div>
+    </form>
+
+    <script>
+    (function() {
+      const dropZone = document.getElementById('dropZone');
+      const pagesInput = document.getElementById('pagesInput');
+      const browseBtn = document.getElementById('browseBtn');
+      const addMoreBtn = document.getElementById('addMoreBtn');
+      const previewContainer = document.getElementById('pagePreviewContainer');
+      const previewList = document.getElementById('pagePreviewList');
+      const pageCount = document.getElementById('pageCount');
+      const form = document.getElementById('editForm');
+
+      let allFiles = [];
+
+      browseBtn.addEventListener('click', () => pagesInput.click());
+      addMoreBtn.addEventListener('click', () => pagesInput.click());
+      dropZone.addEventListener('click', (e) => {
+        if (e.target === dropZone || e.target.closest('.drop-zone-content')) pagesInput.click();
+      });
+
+      dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+      dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+        addFiles(files);
+      });
+
+      pagesInput.addEventListener('change', () => {
+        addFiles(Array.from(pagesInput.files));
+        pagesInput.value = '';
+      });
+
+      function addFiles(files) {
+        files.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+        allFiles = allFiles.concat(files);
+        renderPreviews();
+      }
+
+      function renderPreviews() {
+        previewList.innerHTML = '';
+        if (allFiles.length === 0) {
+          previewContainer.style.display = 'none';
+          dropZone.style.display = '';
+          return;
+        }
+        previewContainer.style.display = '';
+        dropZone.style.display = 'none';
+        pageCount.textContent = '(' + allFiles.length + ' page' + (allFiles.length !== 1 ? 's' : '') + ')';
+
+        allFiles.forEach((file, idx) => {
+          const item = document.createElement('div');
+          item.className = 'page-preview-item';
+          item.dataset.index = idx;
+
+          const num = document.createElement('span');
+          num.className = 'page-num';
+          num.textContent = idx + 1;
+
+          const thumb = document.createElement('img');
+          thumb.className = 'page-thumb';
+          const url = URL.createObjectURL(file);
+          thumb.src = url;
+          thumb.onload = () => URL.revokeObjectURL(url);
+
+          const name = document.createElement('span');
+          name.className = 'page-name';
+          name.textContent = file.name;
+
+          const actions = document.createElement('span');
+          actions.className = 'page-actions';
+
+          if (idx > 0) {
+            const up = document.createElement('button');
+            up.type = 'button'; up.className = 'btn btn-sm btn-outline page-move-btn'; up.innerHTML = '&uarr;';
+            up.onclick = () => { [allFiles[idx - 1], allFiles[idx]] = [allFiles[idx], allFiles[idx - 1]]; renderPreviews(); };
+            actions.appendChild(up);
+          }
+          if (idx < allFiles.length - 1) {
+            const down = document.createElement('button');
+            down.type = 'button'; down.className = 'btn btn-sm btn-outline page-move-btn'; down.innerHTML = '&darr;';
+            down.onclick = () => { [allFiles[idx], allFiles[idx + 1]] = [allFiles[idx + 1], allFiles[idx]]; renderPreviews(); };
+            actions.appendChild(down);
+          }
+
+          const del = document.createElement('button');
+          del.type = 'button'; del.className = 'btn btn-sm btn-danger page-move-btn'; del.innerHTML = '&times;';
+          del.onclick = () => { allFiles.splice(idx, 1); renderPreviews(); };
+          actions.appendChild(del);
+
+          item.append(num, thumb, name, actions);
+          previewList.appendChild(item);
+        });
+      }
+
+      form.addEventListener('submit', (e) => {
+        if (allFiles.length === 0) return;
+        e.preventDefault();
+        const dt = new DataTransfer();
+        allFiles.forEach(f => dt.items.add(f));
+        pagesInput.files = dt.files;
+        form.removeEventListener('submit', arguments.callee);
+        form.submit();
+      });
+    })();
+    </script>
+  </section>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

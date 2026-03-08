@@ -1,0 +1,23 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "admin",
+      "email": "admin@series.com",
+      "password": "$2a$10$lg0AqkClgxJEu1YDTQNExe/eukKh9vtMOtvnQWBgLiywuH7FeaK2.",
+      "role": "admin",
+      "created_at": "2026-03-07T16:50:00.799Z"
+    }
+  ],
+  "chapters": [],
+  "chapter_pages": [],
+  "nextId": {
+    "users": 2,
+    "chapters": 2,
+    "pages": 2,
+    "reviews": 1,
+    "announcements": 1
+  },
+  "reviews": [],
+  "announcements": []
+}
